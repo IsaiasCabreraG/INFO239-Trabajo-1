@@ -93,13 +93,13 @@ void desempaquetar(const char* paquete, char mensaje[17]) {
 
 void rellenarImagen(char** imagen, const char mensaje[], int& fila_actual,int& columna_actual) {
 
-  if (columna_actual ==31){
-    fila_actual++;
-    columna_actual =0;
-    }
+  
     for(int i = 0; i < 16 ; i++) {
       imagen[fila_actual][columna_actual] = (mensaje[i] != '0' ? '#' : '_');
-      columna_actual++;  // Pasamos a la siguiente fila
+      if (columna_actual ==31){
+        fila_actual++;
+        columna_actual =0;
+      }else{columna_actual++;}
     }
     
 }

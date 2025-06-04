@@ -125,7 +125,7 @@ void recibirPaquete(char m[],char** imagen, int& fila_actual,int& columna_actual
 int main(){
   // Estructura del paquete: [8 seq][8 emisor][8 receptor][16 mensaje][8 checksum]
   const int filas = 32;
-    const int columnas = 32;
+  const int columnas = 32;
     
     char** imagen = new char*[filas];    
     for(int i = 0; i < filas; i++) {

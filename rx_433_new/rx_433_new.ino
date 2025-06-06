@@ -5,6 +5,7 @@
 #define LED_PIN 7 // Pin del led Verde
 #define ID 6
 #define PXLS_POR_PAQUETE 16
+#define KEY 5
 
 void intABinario(int valor, char binario[9]) {
   for (int i = 7; i >= 0; i--) {
@@ -15,7 +16,7 @@ void intABinario(int valor, char binario[9]) {
 
 bool verificarID(uint8_t paquete[]){
   if(paquete[2] == ID){
-    Serial.println("ID correcto");
+    Serial.print("ID correcto - ");
     return true;
   }
   Serial.println("ID incorrecto");
@@ -40,7 +41,12 @@ uint8_t calcularCRC8(const uint8_t* datos, size_t longitud, uint8_t polinomio = 
 // Verifica que el último byte sea el CRC8 correcto
 bool verificarCRC8(const uint8_t* datos, size_t longitudConCRC, uint8_t polinomio = 0x07, uint8_t inicial = 0x00) {
     uint8_t crcCalculado = calcularCRC8(datos, longitudConCRC - 1, polinomio, inicial);
-    return crcCalculado == datos[longitudConCRC - 1];
+    if(crcCalculado == datos[longitudConCRC - 1]){
+      Serial.println("CRC correcto");
+      return true; 
+     }
+    Serial.println("CRC incorrecto");
+    return false;
 }
 
 bool imagenCompleta(bool paquetesRecibidos[], int numPaquetes){
@@ -81,6 +87,10 @@ void printImagen(uint8_t imagen[], int n, int m){
   }   
 }
 
+uint8_t descifrar(uint8_t dato, int clave){
+  return (dato - clave) % 256;
+}
+
 bool inicialRecibido = false;
 bool imagenCompletaAux = false;
 bool* paquetesRecibidos;
@@ -104,7 +114,7 @@ void loop() {
     uint8_t buflen = VW_MAX_MESSAGE_LEN;
 
     if (vw_get_message(buf, &buflen)) { // Si hay un mensaje disponible
-      Serial.print("Paquete recibido "); 
+      Serial.print("Paquete recibido - "); 
       //Serial.print(buflen); 
       //Serial.println(" bytes):");
 
@@ -128,15 +138,16 @@ void loop() {
               digitalWrite(LED_PIN, HIGH);
               paquetesRecibidos[buf[0]] = true;
               uint8_t datos[2];
-              datos[0] = buf[3];
-              datos[1] = buf[4];
+              datos[0] = descifrar(buf[3], KEY);
+              datos[1] = descifrar(buf[4], KEY);
+
+
               assembler(imagen, sizeof(imagen)/sizeof(imagen[0]), datos, sizeof(datos)/sizeof(datos[0]), buf[0]);
               // Imprimir cada byte en binario
               for (unsigned int i = 0; i < buflen; i++) {
                 printByteBinary(buf[i]);
                 Serial.print(" "); // Separador entre bytes
               }
-              Serial.println();
               Serial.println("\n-----------------------");
               Serial.print("Contador: ");
               Serial.println(contador);

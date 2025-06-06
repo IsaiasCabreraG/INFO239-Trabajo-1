@@ -5,7 +5,7 @@
 #define LED_PIN 7 // Pin del led Verde
 #define ID 6
 #define PXLS_POR_PAQUETE 16
-#define KEY 10
+#define KEY 5
 
 void intABinario(int valor, char binario[9]) {
   for (int i = 7; i >= 0; i--) {

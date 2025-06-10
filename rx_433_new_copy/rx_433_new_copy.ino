@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 #define RX_PIN 2 // Pin del receptor
-#define LED_PIN 7 // Pin del led Verde
+#define LED_PIN 6 // Pin del led Verde
 #define ID 6
 #define PXLS_POR_PAQUETE 16
 #define KEY 10
@@ -24,10 +24,14 @@ int n;
 int m;
 uint8_t imagen[128];
 int contador = 0;
+int contadorTotalPaquetes = 0;
+unsigned long tiempoInicio;
+unsigned long tiempoFinal;
 
 void setup() {
   Serial.begin(9600);
   Serial.println("Receptor listo");
+  tiempoInicio = millis(); 
   
   vw_set_rx_pin(RX_PIN);
   vw_setup(2000);
@@ -45,6 +49,7 @@ void loop() {
       //Serial.println(" bytes):");
 
       if(verificarID(buf) && verificarCRC8(buf, buflen)){ // se verifica que el id_receptor y el checksum es correcto
+        contadorTotalPaquetes ++;
         if(!inicialRecibido){
           if(buf[0] == 0){
             inicialRecibido = true;
@@ -90,7 +95,13 @@ void loop() {
     }
   }
   else{
+    Serial.print("La cantidad total de paquetes recibidos es: ");
+    Serial.println(contadorTotalPaquetes);
     printImagen(imagen, n, m);
+    tiempoFinal = millis();
+    unsigned long tiempoTranscurrido = tiempoFinal - tiempoInicio;
+    Serial.print("Tiempo total transcurrido: ");
+    Serial.println(tiempoTranscurrido);
     delay(5000);
   }
   

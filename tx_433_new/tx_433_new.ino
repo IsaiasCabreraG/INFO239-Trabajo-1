@@ -17,9 +17,6 @@ void cifrar(uint8_t datos, size_t longitud, int clave);
 void printImagen(uint8_t imagen[], int n, int m);
 
 
-
-
-
 void setup() {
   Serial.begin(9600);
   vw_set_ptt_inverted(true);

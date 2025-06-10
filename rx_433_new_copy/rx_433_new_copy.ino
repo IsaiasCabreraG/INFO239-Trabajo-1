@@ -7,89 +7,15 @@
 #define PXLS_POR_PAQUETE 16
 #define KEY 10
 
-void intABinario(int valor, char binario[9]) {
-  for (int i = 7; i >= 0; i--) {
-    binario[7 - i] = (valor & (1 << i)) ? '1' : '0';
-  }
-  binario[8] = '\0';
-}
-
-bool verificarID(uint8_t paquete[]){
-  if(paquete[2] == ID){
-    Serial.print("ID correcto - ");
-    return true;
-  }
-  Serial.println("ID incorrecto");
-  return false;
-}
-
-// Función para calcular CRC8
-uint8_t calcularCRC8(const uint8_t* datos, size_t longitud, uint8_t polinomio = 0x07, uint8_t inicial = 0x00) {
-    uint8_t crc = inicial;
-    for (size_t i = 0; i < longitud; ++i) {
-        crc ^= datos[i];
-        for (int j = 0; j < 8; ++j) {
-            if (crc & 0x80)
-                crc = (crc << 1) ^ polinomio;
-            else
-                crc <<= 1;
-        }
-    }
-    return crc;
-}
-
-// Verifica que el último byte sea el CRC8 correcto
-bool verificarCRC8(const uint8_t* datos, size_t longitudConCRC, uint8_t polinomio = 0x07, uint8_t inicial = 0x00) {
-    uint8_t crcCalculado = calcularCRC8(datos, longitudConCRC - 1, polinomio, inicial);
-    if(crcCalculado == datos[longitudConCRC - 1]){
-      Serial.println("CRC correcto");
-      return true; 
-     }
-    Serial.println("CRC incorrecto");
-    return false;
-}
-
-bool imagenCompleta(bool paquetesRecibidos[], int numPaquetes){
-  for(int i = 0; i < numPaquetes; i++){
-    if(! paquetesRecibidos[i]){
-      return false;
-    }
-  }
-  return true;
-}
-
-int cantidadPaquetes(int n, int m, int pxlPorPaquete){
-  return (n * m) / pxlPorPaquete;
-}
-
-void assembler(uint8_t imagen[], int sizeImagen, uint8_t datos[], int sizeDatos, int nSecuencia){
-  int inicio = (nSecuencia-1) * sizeDatos;
-  for(int i = 0; i < sizeDatos; i++){
-    if(inicio + i < sizeImagen){
-      imagen[inicio + i] = datos[i];
-    }
-  }    
-}
-
-void printImagen(uint8_t imagen[], int n, int m){
-  for(int i = 0; i < n; i++){
-    for(int j = 0; j < m / 8; j++){
-      for(int k = 7; k >= 0 ; k--){
-        if(bitRead(imagen[i*(m/8) + j], k) == 0){
-          Serial.print("  ");
-        }
-        else{
-          Serial.print("##");
-        }
-      }
-    }
-    Serial.println();
-  }   
-}
-
-uint8_t descifrar(uint8_t dato, int clave){
-  return (dato - clave) % 256;
-}
+void intABinario(int valor, char binario[9]);
+bool verificarID(uint8_t paquete[]);
+uint8_t calcularCRC8(const uint8_t* datos, size_t longitud, uint8_t polinomio = 0x07, uint8_t inicial = 0x00);
+bool verificarCRC8(const uint8_t* datos, size_t longitudConCRC, uint8_t polinomio = 0x07, uint8_t inicial = 0x00);
+bool imagenCompleta(bool paquetesRecibidos[], int numPaquetes);
+int cantidadPaquetes(int n, int m, int pxlPorPaquete);
+void assembler(uint8_t imagen[], int sizeImagen, uint8_t datos[], int sizeDatos, int nSecuencia);
+void printImagen(uint8_t imagen[], int n, int m);
+uint8_t descifrar(uint8_t dato, int clave);
 
 bool inicialRecibido = false;
 bool imagenCompletaAux = false;
@@ -175,4 +101,88 @@ void printByteBinary(uint8_t byte) {
   for (int i = 7; i >= 0; i--) {
     Serial.print(bitRead(byte, i));
   }
+}
+
+void intABinario(int valor, char binario[9]) {
+  for (int i = 7; i >= 0; i--) {
+    binario[7 - i] = (valor & (1 << i)) ? '1' : '0';
+  }
+  binario[8] = '\0';
+}
+
+bool verificarID(uint8_t paquete[]){
+  if(paquete[2] == ID){
+    Serial.print("ID correcto - ");
+    return true;
+  }
+  Serial.println("ID incorrecto");
+  return false;
+}
+
+// Función para calcular CRC8
+uint8_t calcularCRC8(const uint8_t* datos, size_t longitud, uint8_t polinomio = 0x07, uint8_t inicial = 0x00) {
+    uint8_t crc = inicial;
+    for (size_t i = 0; i < longitud; ++i) {
+        crc ^= datos[i];
+        for (int j = 0; j < 8; ++j) {
+            if (crc & 0x80)
+                crc = (crc << 1) ^ polinomio;
+            else
+                crc <<= 1;
+        }
+    }
+    return crc;
+}
+
+// Verifica que el último byte sea el CRC8 correcto
+bool verificarCRC8(const uint8_t* datos, size_t longitudConCRC, uint8_t polinomio = 0x07, uint8_t inicial = 0x00) {
+    uint8_t crcCalculado = calcularCRC8(datos, longitudConCRC - 1, polinomio, inicial);
+    if(crcCalculado == datos[longitudConCRC - 1]){
+      Serial.println("CRC correcto");
+      return true; 
+     }
+    Serial.println("CRC incorrecto");
+    return false;
+}
+
+bool imagenCompleta(bool paquetesRecibidos[], int numPaquetes){
+  for(int i = 0; i < numPaquetes; i++){
+    if(! paquetesRecibidos[i]){
+      return false;
+    }
+  }
+  return true;
+}
+
+int cantidadPaquetes(int n, int m, int pxlPorPaquete){
+  return (n * m) / pxlPorPaquete;
+}
+
+void assembler(uint8_t imagen[], int sizeImagen, uint8_t datos[], int sizeDatos, int nSecuencia){
+  int inicio = (nSecuencia-1) * sizeDatos;
+  for(int i = 0; i < sizeDatos; i++){
+    if(inicio + i < sizeImagen){
+      imagen[inicio + i] = datos[i];
+    }
+  }    
+}
+
+void printImagen(uint8_t imagen[], int n, int m){
+  for(int i = 0; i < n; i++){
+    for(int j = 0; j < m / 8; j++){
+      for(int k = 7; k >= 0 ; k--){
+        if(bitRead(imagen[i*(m/8) + j], k) == 0){
+          Serial.print("  ");
+        }
+        else{
+          Serial.print("##");
+        }
+      }
+    }
+    Serial.println();
+  }   
+}
+
+uint8_t descifrar(uint8_t dato, int clave){
+  return (dato - clave) % 256;
 }
